@@ -289,7 +289,7 @@
 				TargetAttributes = {
 					25A81D091C500E9C008E51B9 = {
 						CreatedOnToolsVersion = 7.2;
-						DevelopmentTeam = QG8TM5XJ84;
+						DevelopmentTeam = PV29NG85J2;
 						LastSwiftMigration = 0830;
 					};
 					25A81D1D1C500E9C008E51B9 = {
@@ -519,6 +519,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = PV29NG85J2;
 				INFOPLIST_FILE = Tofu/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.calleerlandsson.Tofu;
@@ -536,6 +537,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = PV29NG85J2;
 				INFOPLIST_FILE = Tofu/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.calleerlandsson.Tofu;
