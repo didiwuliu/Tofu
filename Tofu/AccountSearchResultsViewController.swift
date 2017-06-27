@@ -8,7 +8,7 @@ final class AccountSearchResultsViewController: UITableViewController, AccountUp
     didSet {
       tableView.reloadData()
       tableView.backgroundView = accounts.count == 0 ? emptyView : nil
-      tableView.separatorStyle = accounts.count == 0 ? .None : .SingleLine
+      tableView.separatorStyle = accounts.count == 0 ? .none : .singleLine
     }
   }
 
@@ -20,18 +20,18 @@ final class AccountSearchResultsViewController: UITableViewController, AccountUp
 
   // MARK: UITableViewDataSource
 
-  override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+  override func numberOfSections(in tableView: UITableView) -> Int {
     return 1
   }
 
-  override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+  override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     return accounts.count
   }
 
-  override func tableView(tableView: UITableView,
-    cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-      let cell = tableView.dequeueReusableCellWithIdentifier(accountCellIdentifier,
-        forIndexPath: indexPath) as! AccountCell
+  override func tableView(_ tableView: UITableView,
+    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+      let cell = tableView.dequeueReusableCell(withIdentifier: accountCellIdentifier,
+        for: indexPath) as! AccountCell
       cell.account = accounts[indexPath.row]
       cell.delegate = self
       return cell
@@ -39,32 +39,32 @@ final class AccountSearchResultsViewController: UITableViewController, AccountUp
 
   // MARK: UITableViewDelegate
 
-  override func tableView(tableView: UITableView,
-    shouldShowMenuForRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+  override func tableView(_ tableView: UITableView,
+    shouldShowMenuForRowAt indexPath: IndexPath) -> Bool {
       return true
   }
 
-  override func tableView(tableView: UITableView, canPerformAction action: Selector,
-    forRowAtIndexPath indexPath: NSIndexPath, withSender sender: AnyObject?) -> Bool {
+  override func tableView(_ tableView: UITableView, canPerformAction action: Selector,
+    forRowAt indexPath: IndexPath, withSender sender: Any?) -> Bool {
       return action == #selector(copy(_:))
   }
 
-  override func tableView(tableView: UITableView, performAction action: Selector,
-    forRowAtIndexPath indexPath: NSIndexPath, withSender sender: AnyObject?) {
+  override func tableView(_ tableView: UITableView, performAction action: Selector,
+    forRowAt indexPath: IndexPath, withSender sender: Any?) {
       if action == #selector(copy(_:)) {
-        let cell = tableView.cellForRowAtIndexPath(indexPath) as! AccountCell
-        UIPasteboard.generalPasteboard().string = cell.valueLabel.text?
-          .stringByReplacingOccurrencesOfString(" ", withString: "")
+        let cell = tableView.cellForRow(at: indexPath) as! AccountCell
+        UIPasteboard.general.string = cell.valueLabel.text?
+          .replacingOccurrences(of: " ", with: "")
       }
   }
 
   // MARK: AccountUpdateDelegate
 
-  func updateAccount(account: Account) {
+  func updateAccount(_ account: Account) {
     (presentingViewController as! AccountUpdateDelegate).updateAccount(account)
-    let row = accounts.indexOf { $0 === account }!
-    let indexPath = NSIndexPath(forRow: row, inSection: 0)
-    guard let cell = tableView.cellForRowAtIndexPath(indexPath) as? AccountCell else { return }
-    cell.updateWithDate(NSDate())
+    let row = accounts.index { $0 === account }!
+    let indexPath = IndexPath(row: row, section: 0)
+    guard let cell = tableView.cellForRow(at: indexPath) as? AccountCell else { return }
+    cell.updateWithDate(Date())
   }
 }

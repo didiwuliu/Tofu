@@ -3,7 +3,7 @@ import XCTest
 
 class PasswordTests: XCTestCase {
   func testValueForDate() {
-    let secret = "12345678901234567890".dataUsingEncoding(NSASCIIStringEncoding)!
+    let secret = "12345678901234567890".data(using: String.Encoding.ascii)!
     let counterBasedTests: [(Int, String, String, String)] = [
       (0, "755224", "875740", "125165"),
       (1, "287082", "247374", "342147"),
@@ -17,33 +17,33 @@ class PasswordTests: XCTestCase {
       (9, "520489", "184989", "643409"),
     ]
     let timeBasedTests = [
-      (NSDate(timeIntervalSince1970: 59), "94287082", "32247374", "69342147"),
-      (NSDate(timeIntervalSince1970: 1111111109), "07081804", "34756375", "63049338"),
-      (NSDate(timeIntervalSince1970: 1111111111), "14050471", "74584430", "54380122"),
-      (NSDate(timeIntervalSince1970: 1234567890), "89005924", "42829826", "76671578"),
-      (NSDate(timeIntervalSince1970: 2000000000), "69279037", "78428693", "56464532"),
-      (NSDate(timeIntervalSince1970: 20000000000), "65353130", "24142410", "69481994"),
+      (Date(timeIntervalSince1970: 59), "94287082", "32247374", "69342147"),
+      (Date(timeIntervalSince1970: 1111111109), "07081804", "34756375", "63049338"),
+      (Date(timeIntervalSince1970: 1111111111), "14050471", "74584430", "54380122"),
+      (Date(timeIntervalSince1970: 1234567890), "89005924", "42829826", "76671578"),
+      (Date(timeIntervalSince1970: 2000000000), "69279037", "78428693", "56464532"),
+      (Date(timeIntervalSince1970: 20000000000), "65353130", "24142410", "69481994"),
     ]
-    let counterBasedSHA1Password = passwordWithSecret(secret, algorithm: .SHA1, digits: 6,
+    let counterBasedSHA1Password = passwordWithSecret(secret, algorithm: .sha1, digits: 6,
       timeBased: false)
-    let counterBasedSHA256Password = passwordWithSecret(secret, algorithm: .SHA256, digits: 6,
+    let counterBasedSHA256Password = passwordWithSecret(secret, algorithm: .sha256, digits: 6,
       timeBased: false)
-    let counterBasedSHA512Password = passwordWithSecret(secret, algorithm: .SHA512, digits: 6,
+    let counterBasedSHA512Password = passwordWithSecret(secret, algorithm: .sha512, digits: 6,
       timeBased: false)
-    let timeBasedSHA1Password = passwordWithSecret(secret, algorithm: .SHA1, digits: 8,
+    let timeBasedSHA1Password = passwordWithSecret(secret, algorithm: .sha1, digits: 8,
       timeBased: true)
-    let timeBasedSHA256Password = passwordWithSecret(secret, algorithm: .SHA256, digits: 8,
+    let timeBasedSHA256Password = passwordWithSecret(secret, algorithm: .sha256, digits: 8,
       timeBased: true)
-    let timeBasedSHA512Password = passwordWithSecret(secret, algorithm: .SHA512, digits: 8,
+    let timeBasedSHA512Password = passwordWithSecret(secret, algorithm: .sha512, digits: 8,
       timeBased: true)
 
     for (counter, expSHA1, expSHA256, expSHA512) in counterBasedTests {
       counterBasedSHA1Password.counter = counter
-      XCTAssertEqual(counterBasedSHA1Password.valueForDate(NSDate()), expSHA1)
+      XCTAssertEqual(counterBasedSHA1Password.valueForDate(Date()), expSHA1)
       counterBasedSHA256Password.counter = counter
-      XCTAssertEqual(counterBasedSHA256Password.valueForDate(NSDate()), expSHA256)
+      XCTAssertEqual(counterBasedSHA256Password.valueForDate(Date()), expSHA256)
       counterBasedSHA512Password.counter = counter
-      XCTAssertEqual(counterBasedSHA512Password.valueForDate(NSDate()), expSHA512)
+      XCTAssertEqual(counterBasedSHA512Password.valueForDate(Date()), expSHA512)
     }
 
     for (date, expSHA1, expSHA256, expSHA512) in timeBasedTests {
@@ -57,23 +57,23 @@ class PasswordTests: XCTestCase {
     let password = Password()
     password.period = 30
 
-    XCTAssertEqual(password.progressForDate(NSDate(timeIntervalSince1970: 0)), 1)
-    XCTAssertEqual(password.progressForDate(NSDate(timeIntervalSince1970: 15)), 0.5)
-    XCTAssertEqual(password.progressForDate(NSDate(timeIntervalSince1970: 22.5)), 0.25)
-    XCTAssertEqual(password.progressForDate(NSDate(timeIntervalSince1970: 30)), 1)
+    XCTAssertEqual(password.progressForDate(Date(timeIntervalSince1970: 0)), 1)
+    XCTAssertEqual(password.progressForDate(Date(timeIntervalSince1970: 15)), 0.5)
+    XCTAssertEqual(password.progressForDate(Date(timeIntervalSince1970: 22.5)), 0.25)
+    XCTAssertEqual(password.progressForDate(Date(timeIntervalSince1970: 30)), 1)
   }
 
   func timeIntervalRemainingForDate() {
     let password = Password()
     password.period = 30
 
-    XCTAssertEqual(password.timeIntervalRemainingForDate(NSDate(timeIntervalSince1970: 0)), 30)
-    XCTAssertEqual(password.timeIntervalRemainingForDate(NSDate(timeIntervalSince1970: 15)), 15)
-    XCTAssertEqual(password.timeIntervalRemainingForDate(NSDate(timeIntervalSince1970: 22.5)), 7.5)
-    XCTAssertEqual(password.timeIntervalRemainingForDate(NSDate(timeIntervalSince1970: 30)), 0)
+    XCTAssertEqual(password.timeIntervalRemainingForDate(Date(timeIntervalSince1970: 0)), 30)
+    XCTAssertEqual(password.timeIntervalRemainingForDate(Date(timeIntervalSince1970: 15)), 15)
+    XCTAssertEqual(password.timeIntervalRemainingForDate(Date(timeIntervalSince1970: 22.5)), 7.5)
+    XCTAssertEqual(password.timeIntervalRemainingForDate(Date(timeIntervalSince1970: 30)), 0)
   }
 
-  private func passwordWithSecret(secret: NSData, algorithm: Algorithm, digits: Int,
+  fileprivate func passwordWithSecret(_ secret: Data, algorithm: Algorithm, digits: Int,
     timeBased: Bool) -> Password {
       let password = Password()
       password.secret = secret

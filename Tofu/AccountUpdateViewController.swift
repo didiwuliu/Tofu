@@ -6,14 +6,14 @@ final class AccountUpdateViewController: UITableViewController {
   var delegate: AccountUpdateDelegate?
   var account: Account!
 
-  override func viewWillAppear(animated: Bool) {
+  override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
 
     nameField.text = account.name
     issuerField.text = account.issuer
   }
 
-  override func viewWillDisappear(animated: Bool) {
+  override func viewWillDisappear(_ animated: Bool) {
     super.viewWillDisappear(animated)
 
     account.name = nameField.text

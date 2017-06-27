@@ -21,16 +21,16 @@ class NSDataTests: XCTestCase {
     ]
 
     for (actual, expected) in tests {
-      XCTAssertEqual(NSData(base32EncodedString: actual),
-        expected.dataUsingEncoding(NSASCIIStringEncoding))
+      XCTAssertEqual(Data(base32EncodedString: actual),
+        expected.data(using: String.Encoding.ascii))
     }
 
-    XCTAssertNil(NSData(base32EncodedString: "1")) // Invalid character
-    XCTAssertNil(NSData(base32EncodedString: "A")) // Invalid length
-    XCTAssertNil(NSData(base32EncodedString: "AAA"))
-    XCTAssertNil(NSData(base32EncodedString: "AAAAAA"))
-    XCTAssertNil(NSData(base32EncodedString: "MY==")) // Invalid padding
-    XCTAssertNil(NSData(base32EncodedString: "MY====="))
-    XCTAssertNil(NSData(base32EncodedString: "MZXW6Y==="))
+    XCTAssertNil(Data(base32EncodedString: "1")) // Invalid character
+    XCTAssertNil(Data(base32EncodedString: "A")) // Invalid length
+    XCTAssertNil(Data(base32EncodedString: "AAA"))
+    XCTAssertNil(Data(base32EncodedString: "AAAAAA"))
+    XCTAssertNil(Data(base32EncodedString: "MY==")) // Invalid padding
+    XCTAssertNil(Data(base32EncodedString: "MY====="))
+    XCTAssertNil(Data(base32EncodedString: "MZXW6Y==="))
   }
 }

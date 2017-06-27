@@ -1,32 +1,32 @@
 import Foundation
 
 private enum Base32DecodedByte {
-  case Valid(UInt8)
-  case Invalid
-  case Padding
+  case valid(UInt8)
+  case invalid
+  case padding
 }
 
 private let padding: UInt8 = 61 // =
 
-private let byteMappings: [Range<UInt8>] = [
+private let byteMappings: [CountableRange<UInt8>] = [
   65 ..< 91, // A-Z
   50 ..< 56, // 2-7
 ]
 
-private func base32DecodeByte(byte: UInt8) -> Base32DecodedByte {
-  guard byte != padding else { return .Padding }
+private func base32DecodeByte(_ byte: UInt8) -> Base32DecodedByte {
+  guard byte != padding else { return .padding }
   var decodedStart: UInt8 = 0
   for range in byteMappings {
     if range.contains(byte) {
-      let result = decodedStart + (byte - range.startIndex)
-      return .Valid(result)
+      let result = decodedStart + (byte - range.lowerBound)
+      return .valid(result)
     }
-    decodedStart += range.endIndex - range.startIndex
+    decodedStart += range.upperBound - range.lowerBound
   }
-  return .Invalid
+  return .invalid
 }
 
-private func decodedBytes(bytes: [UInt8]) -> [UInt8]? {
+private func decodedBytes(_ bytes: [UInt8]) -> [UInt8]? {
   var decodedBytes = [UInt8]()
   decodedBytes.reserveCapacity(bytes.count / 8 * 5)
 
@@ -39,12 +39,12 @@ private func decodedBytes(bytes: [UInt8]) -> [UInt8]? {
     let value: UInt8
 
     switch base32DecodeByte(byte) {
-    case .Valid(let v):
+    case .valid(let v):
       value = v
       characterCount += 1
-    case .Invalid:
+    case .invalid:
       return nil
-    case .Padding:
+    case .padding:
       paddingCount += 1
       continue
     }
@@ -92,13 +92,13 @@ private func decodedBytes(bytes: [UInt8]) -> [UInt8]? {
   return decodedBytes
 }
 
-extension NSData {
-  convenience init?(base32EncodedString string: String) {
-    let encodedBytes = Array(string.uppercaseString.utf8)
+extension Data {
+  init?(base32EncodedString string: String) {
+    let encodedBytes = Array(string.uppercased().utf8)
     guard let decodedBytes = decodedBytes(encodedBytes) else {
       self.init() // https://bugs.swift.org/browse/SR-704
       return nil
     }
-    self.init(bytes: decodedBytes, length: decodedBytes.count)
+    self.init(bytes: decodedBytes)
   }
 }

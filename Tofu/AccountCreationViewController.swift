@@ -1,8 +1,32 @@
 import UIKit
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
 
-private let formatter: NSNumberFormatter = {
-  let formatter = NSNumberFormatter()
-  formatter.numberStyle = .NoStyle
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l > r
+  default:
+    return rhs < lhs
+  }
+}
+
+
+private let formatter: NumberFormatter = {
+  let formatter = NumberFormatter()
+  formatter.numberStyle = .none
   return formatter
 }()
 
@@ -18,30 +42,30 @@ final class AccountCreationViewController: UITableViewController, AlgorithmSelec
   @IBOutlet weak var periodCounterLabel: UILabel!
   @IBOutlet weak var periodCounterField: UITextField!
   var delegate: AccountCreationDelegate?
-  private var algorithm = Algorithm.SHA1
-  private var periodString: String?
-  private var counterString: String?
-  private var period: Int? {
+  fileprivate var algorithm = Algorithm.sha1
+  fileprivate var periodString: String?
+  fileprivate var counterString: String?
+  fileprivate var period: Int? {
     guard periodCounterField.text?.characters.count > 0 else { return 30 }
-    return formatter.numberFromString(periodCounterField.text!)?.integerValue
+    return formatter.number(from: periodCounterField.text!)?.intValue
   }
-  private var counter: Int? {
+  fileprivate var counter: Int? {
     guard periodCounterField.text?.characters.count > 0 else { return 0 }
-    return formatter.numberFromString(periodCounterField.text!)?.integerValue
+    return formatter.number(from: periodCounterField.text!)?.intValue
   }
 
-  @IBAction func didPressCancel(sender: UIBarButtonItem) {
-    presentingViewController?.dismissViewControllerAnimated(true, completion: nil)
+  @IBAction func didPressCancel(_ sender: UIBarButtonItem) {
+    presentingViewController?.dismiss(animated: true, completion: nil)
   }
 
-  @IBAction func didPressDone(sender: UIBarButtonItem) {
+  @IBAction func didPressDone(_ sender: UIBarButtonItem) {
     let password = Password()
-    password.timeBased = timeBasedSwitch.on
+    password.timeBased = timeBasedSwitch.isOn
     password.algorithm = algorithm
-    password.digits = eightDigitsSwitch.on ? 8 : 6
-    password.secret = NSData(base32EncodedString: secretField.text!)!
+    password.digits = eightDigitsSwitch.isOn ? 8 : 6
+    password.secret = Data(base32EncodedString: secretField.text!)!
 
-    if timeBasedSwitch.on {
+    if timeBasedSwitch.isOn {
       password.period = period!
     } else {
       password.counter = counter!
@@ -52,26 +76,26 @@ final class AccountCreationViewController: UITableViewController, AlgorithmSelec
     account.issuer = issuerField.text
     account.password = password
 
-    presentingViewController?.dismissViewControllerAnimated(true) {
+    presentingViewController?.dismiss(animated: true) {
       self.delegate?.createAccount(account)
     }
   }
 
-  @IBAction func editingChangedForTextField(textField: UITextField) {
+  @IBAction func editingChangedForTextField(_ textField: UITextField) {
     validate()
   }
 
   @IBAction func valueChangedForTimeBasedSwitch() {
-    if self.timeBasedSwitch.on {
+    if self.timeBasedSwitch.isOn {
       counterString = periodCounterField.text
     } else {
       periodString = periodCounterField.text
     }
-    UIView.transitionWithView(periodCounterCell,
+    UIView.transition(with: periodCounterCell,
       duration: 0.2,
-      options: .TransitionCrossDissolve,
+      options: .transitionCrossDissolve,
       animations: {
-        if self.timeBasedSwitch.on {
+        if self.timeBasedSwitch.isOn {
           self.periodCounterLabel.text = "Period"
           self.periodCounterField.placeholder = String(30)
           self.periodCounterField.text = self.periodString
@@ -91,23 +115,23 @@ final class AccountCreationViewController: UITableViewController, AlgorithmSelec
     algorithmLabel.text = algorithm.name
   }
 
-  override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-    if let algorithmsController = segue.destinationViewController as? AlgorithmsViewController {
-      algorithmsController.algorithms = [.SHA1, .SHA256, .SHA512]
+  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    if let algorithmsController = segue.destination as? AlgorithmsViewController {
+      algorithmsController.algorithms = [.sha1, .sha256, .sha512]
       algorithmsController.selected = algorithm
       algorithmsController.delegate = self
     }
   }
 
-  private func validate() {
-    doneItem.enabled = secretField.text?.characters.count > 0 &&
-      NSData(base32EncodedString: secretField.text!) != nil &&
-      (timeBasedSwitch.on ? period != nil : counter != nil)
+  fileprivate func validate() {
+    doneItem.isEnabled = secretField.text?.characters.count > 0 &&
+      Data(base32EncodedString: secretField.text!) != nil &&
+      (timeBasedSwitch.isOn ? period != nil : counter != nil)
   }
 
   // MARK: AlgorithmSelectionDelegate
 
-  func selectAlgorithm(algorithm: Algorithm) {
+  func selectAlgorithm(_ algorithm: Algorithm) {
     self.algorithm = algorithm
     algorithmLabel.text = algorithm.name
   }

@@ -1,76 +1,76 @@
 import Foundation
 
-private func archivedDataWithAccount(account: Account) -> NSData {
+private func archivedDataWithAccount(_ account: Account) -> Data {
   let data = NSMutableData()
-  let coder = NSKeyedArchiver(forWritingWithMutableData: data)
+  let coder = NSKeyedArchiver(forWritingWith: data)
 
-  coder.encodeBool(account.password.timeBased, forKey: "timeBased")
+  coder.encode(account.password.timeBased, forKey: "timeBased")
   let algorithmIdentifier: Int32
   switch account.password.algorithm {
-  case .SHA1: algorithmIdentifier = 0
-  case .SHA256: algorithmIdentifier = 1
-  case .SHA512: algorithmIdentifier = 2
+  case .sha1: algorithmIdentifier = 0
+  case .sha256: algorithmIdentifier = 1
+  case .sha512: algorithmIdentifier = 2
   }
-  coder.encodeInt32(algorithmIdentifier, forKey: "algorithm")
-  coder.encodeInt32(Int32(account.password.digits), forKey: "digits")
-  coder.encodeObject(account.password.secret, forKey: "secret")
-  coder.encodeInt32(Int32(account.password.counter), forKey: "counter")
-  coder.encodeInt32(Int32(account.password.period), forKey: "period")
-  coder.encodeObject(account.name, forKey: "name")
-  coder.encodeObject(account.issuer, forKey: "issuer")
+  coder.encode(algorithmIdentifier, forKey: "algorithm")
+  coder.encode(Int32(account.password.digits), forKey: "digits")
+  coder.encode(account.password.secret, forKey: "secret")
+  coder.encode(Int32(account.password.counter), forKey: "counter")
+  coder.encode(Int32(account.password.period), forKey: "period")
+  coder.encode(account.name, forKey: "name")
+  coder.encode(account.issuer, forKey: "issuer")
   coder.finishEncoding()
 
   var version: UInt8 = 1
-  let size = sizeofValue(version)
+  let size = MemoryLayout.size(ofValue: version)
   let versionedData = NSMutableData(bytes: &version, length: size)
-  versionedData.appendData(data)
+  versionedData.append(data as Data)
 
-  return versionedData
+  return versionedData as Data
 }
 
-private func unarchiveAccountWithData(data: NSData) -> Account? {
+private func unarchiveAccountWithData(_ data: Data) -> Account? {
   var version: UInt8 = 0
-  let size = sizeofValue(version)
-  data.getBytes(&version, length: size)
+  let size = MemoryLayout.size(ofValue: version)
+  (data as NSData).getBytes(&version, length: size)
   guard version == 1 else { return nil }
-  let subdata = data.subdataWithRange(NSRange(location: size, length: data.length - size))
+  let subdata = data.subdata(in: Range(size..<data.count))
 
-  let coder = NSKeyedUnarchiver(forReadingWithData: subdata)
+  let coder = NSKeyedUnarchiver(forReadingWith: subdata)
 
-  guard let secret = coder.decodeObjectForKey("secret") as? NSData else { return nil }
+  guard let secret = coder.decodeObject(forKey: "secret") as? Data else { return nil }
 
   let password = Password()
 
-  switch coder.decodeInt32ForKey("algorithm") {
-  case 0: password.algorithm = .SHA1
-  case 1: password.algorithm = .SHA256
-  case 2: password.algorithm = .SHA512
+  switch coder.decodeInt32(forKey: "algorithm") {
+  case 0: password.algorithm = .sha1
+  case 1: password.algorithm = .sha256
+  case 2: password.algorithm = .sha512
   default: return nil
   }
 
   password.secret = secret
-  password.digits = Int(coder.decodeInt32ForKey("digits"))
-  password.timeBased = coder.decodeBoolForKey("timeBased")
-  password.counter = Int(coder.decodeInt32ForKey("counter"))
-  password.period = Int(coder.decodeInt32ForKey("period"))
+  password.digits = Int(coder.decodeInt32(forKey: "digits"))
+  password.timeBased = coder.decodeBool(forKey: "timeBased")
+  password.counter = Int(coder.decodeInt32(forKey: "counter"))
+  password.period = Int(coder.decodeInt32(forKey: "period"))
 
   let account = Account()
-  account.name = coder.decodeObjectForKey("name") as? String
-  account.issuer = coder.decodeObjectForKey("issuer") as? String
+  account.name = coder.decodeObject(forKey: "name") as? String
+  account.issuer = coder.decodeObject(forKey: "issuer") as? String
   account.password = password
   return account
 }
 
-private func accountWithPersistentRef(persistentRef: NSData) -> Account? {
+private func accountWithPersistentRef(_ persistentRef: Data) -> Account? {
   let query: [NSString: AnyObject] = [
     kSecClass: kSecClassGenericPassword,
-    kSecValuePersistentRef: persistentRef,
+    kSecValuePersistentRef: persistentRef as AnyObject,
     kSecReturnData: kCFBooleanTrue,
   ]
   var result: AnyObject?
-  let code = SecItemCopyMatching(query, &result)
+  let code = SecItemCopyMatching(query as CFDictionary, &result)
   guard code == errSecSuccess,
-    let data = result as? NSData,
+    let data = result as? Data,
     let account = unarchiveAccountWithData(data) else { return nil }
   account.persistentRef = persistentRef
   return account
@@ -84,44 +84,44 @@ final class Keychain {
       kSecMatchLimit: kSecMatchLimitAll,
     ]
     var result: AnyObject?
-    let code = SecItemCopyMatching(query, &result)
-    guard code == errSecSuccess, let persistentRefs = result as? [NSData] else { return [] }
+    let code = SecItemCopyMatching(query as CFDictionary, &result)
+    guard code == errSecSuccess, let persistentRefs = result as? [Data] else { return [] }
     return persistentRefs.flatMap { accountWithPersistentRef($0) }
   }
 
-  func insertAccount(account: Account) -> Bool {
+  func insertAccount(_ account: Account) -> Bool {
     let query: [NSString: AnyObject] = [
       kSecClass: kSecClassGenericPassword,
-      kSecAttrAccount: NSProcessInfo().globallyUniqueString,
-      kSecAttrDescription: account.description,
-      kSecValueData: archivedDataWithAccount(account),
+      kSecAttrAccount: ProcessInfo().globallyUniqueString as AnyObject,
+      kSecAttrDescription: account.description as AnyObject,
+      kSecValueData: archivedDataWithAccount(account) as AnyObject,
       kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked,
-      kSecReturnPersistentRef: true,
+      kSecReturnPersistentRef: true as AnyObject,
     ]
     var result: AnyObject?
-    guard SecItemAdd(query, &result) == errSecSuccess else { return false }
-    account.persistentRef = (result as! NSData)
+    guard SecItemAdd(query as CFDictionary, &result) == errSecSuccess else { return false }
+    account.persistentRef = (result as! Data)
     return true
   }
 
-  func updateAccount(account: Account) -> Bool {
+  func updateAccount(_ account: Account) -> Bool {
     let query: [NSString: AnyObject] = [
       kSecClass: kSecClassGenericPassword,
-      kSecValuePersistentRef: account.persistentRef!
+      kSecValuePersistentRef: account.persistentRef! as AnyObject
     ]
     let attributes: [NSString: AnyObject] = [
-      kSecAttrDescription: account.description,
-      kSecValueData: archivedDataWithAccount(account),
+      kSecAttrDescription: account.description as AnyObject,
+      kSecValueData: archivedDataWithAccount(account) as AnyObject,
       kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked,
     ]
-    return SecItemUpdate(query, attributes) == errSecSuccess
+    return SecItemUpdate(query as CFDictionary, attributes as CFDictionary) == errSecSuccess
   }
 
-  func deleteAccount(account: Account) -> Bool {
+  func deleteAccount(_ account: Account) -> Bool {
     let query: [NSString: AnyObject] = [
       kSecClass: kSecClassGenericPassword,
-      kSecValuePersistentRef: account.persistentRef!
+      kSecValuePersistentRef: account.persistentRef! as AnyObject
     ]
-    return SecItemDelete(query) == errSecSuccess
+    return SecItemDelete(query as CFDictionary) == errSecSuccess
   }
 }

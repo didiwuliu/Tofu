@@ -9,33 +9,33 @@ final class AlgorithmsViewController: UITableViewController {
 
   // MARK: UITableViewDataSource
 
-  override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+  override func numberOfSections(in tableView: UITableView) -> Int {
     return 1
   }
 
-  override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+  override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     return algorithms.count
   }
 
-  override func tableView(tableView: UITableView,
-    cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-      let cell = tableView.dequeueReusableCellWithIdentifier(algorithmCellIdentifier,
-        forIndexPath: indexPath)
+  override func tableView(_ tableView: UITableView,
+    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+      let cell = tableView.dequeueReusableCell(withIdentifier: algorithmCellIdentifier,
+        for: indexPath)
       let algorithm = algorithms[indexPath.row]
       cell.textLabel?.text = algorithm.name
-      cell.accessoryType = selected == algorithm ? .Checkmark : .None
+      cell.accessoryType = selected == algorithm ? .checkmark : .none
       return cell
   }
 
   // MARK: UITableViewDelegate
 
-  override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-    tableView.deselectRowAtIndexPath(indexPath, animated: true)
-    let previouslySelectedCell = tableView.cellForRowAtIndexPath(
-      NSIndexPath(forRow: algorithms.indexOf(selected)!, inSection: 0))!
-    previouslySelectedCell.accessoryType = .None
-    let selectedCell = tableView.cellForRowAtIndexPath(indexPath)!
-    selectedCell.accessoryType = .Checkmark
+  override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    tableView.deselectRow(at: indexPath, animated: true)
+    let previouslySelectedCell = tableView.cellForRow(
+      at: IndexPath(row: algorithms.index(of: selected)!, section: 0))!
+    previouslySelectedCell.accessoryType = .none
+    let selectedCell = tableView.cellForRow(at: indexPath)!
+    selectedCell.accessoryType = .checkmark
     selected = algorithms[indexPath.row]
     delegate?.selectAlgorithm(selected)
   }

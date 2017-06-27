@@ -12,9 +12,9 @@ final class CircularProgressView: UIView {
       backgroundImageView.tintColor = tintColor
     }
   }
-  private let maskLayer = CAShapeLayer()
-  private let imageView: UIImageView
-  private let backgroundImageView: UIImageView
+  fileprivate let maskLayer = CAShapeLayer()
+  fileprivate let imageView: UIImageView
+  fileprivate let backgroundImageView: UIImageView
 
   init() {
     let backgroundImage = UIImage(named: "CircularProgressViewBorderThin")!
@@ -25,11 +25,11 @@ final class CircularProgressView: UIView {
     let x = frame.size.width / 2
     let y = frame.size.height / 2
     let radius = max(x, y)
-    let path = CGPathCreateMutable()
-    CGPathMoveToPoint(path, nil, x, y - radius / 2)
-    CGPathAddArc(path, nil, x, y, radius / 2, -CGFloat(M_PI) / 2, 3 * CGFloat(M_PI) / 2, false)
-    maskLayer.fillColor = UIColor.clearColor().CGColor
-    maskLayer.strokeColor = UIColor.blackColor().CGColor
+    let path = CGMutablePath()
+    path.move(to: CGPoint(x: x, y: y - radius / 2));
+    path.addArc(center: CGPoint(x: x, y: y), radius: radius / 2, startAngle: -CGFloat(Double.pi) / 2, endAngle: 3 * CGFloat(Double.pi) / 2, clockwise: false)
+    maskLayer.fillColor = UIColor.clear.cgColor
+    maskLayer.strokeColor = UIColor.black.cgColor
     maskLayer.lineWidth = radius
     maskLayer.path = path
     maskLayer.strokeEnd = CGFloat(progress)

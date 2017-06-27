@@ -1,3 +1,3 @@
 protocol AccountUpdateDelegate: class {
-  func updateAccount(account: Account)
+  func updateAccount(_ account: Account)
 }

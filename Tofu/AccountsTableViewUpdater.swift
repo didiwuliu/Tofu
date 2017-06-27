@@ -8,13 +8,13 @@ final class AccountsTableViewUpdater: NSObject {
   }
 
   func startUpdating() {
-    let timer = NSTimer(timeInterval: 1, target: self, selector: #selector(updateCells),
+    let timer = Timer(timeInterval: 1, target: self, selector: #selector(updateCells),
                         userInfo: nil, repeats: true)
-    NSRunLoop.mainRunLoop().addTimer(timer, forMode: NSRunLoopCommonModes)
+    RunLoop.main.add(timer, forMode: RunLoopMode.commonModes)
   }
 
   func updateCells() {
-    let now = NSDate()
+    let now = Date()
     for cell in tableView.visibleCells {
       let accountCell = cell as! AccountCell
       accountCell.updateWithDate(now)

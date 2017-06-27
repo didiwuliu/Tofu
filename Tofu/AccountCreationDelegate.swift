@@ -1,3 +1,3 @@
 protocol AccountCreationDelegate: class {
-  func createAccount(account: Account)
+  func createAccount(_ account: Account)
 }
